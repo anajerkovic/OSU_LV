@@ -14,8 +14,8 @@ def a_zadatak():
     print(len(data)) # 2212 mjerenja
     print(data.info()) # int, float, object
     data.drop_duplicates() # nema dupliciranih vrijednosti
-    data.dropna()
-    data['Vehicle Class'] = data['Vehicle Class'].astype('category')
+    data.dropna() # brisanje null vrijednosti
+    data['Vehicle Class'] = data['Vehicle Class'].astype('category') # kategoricki tipovi -- category tip
     print(data.info())
 
 
@@ -44,8 +44,7 @@ def c_zadatak():
 def d_zadatak():
     '''
     d) Koliko mjerenja se odnosi na vozila proizvodaca Audi? Kolika je
-      prosječna emisija C02 
-    plinova automobila proizvodača Audi koji imaju 4 cilindara?
+      prosječna emisija C02 plinova automobila proizvodača Audi koji imaju 4 cilindara?
     '''
     audis = data[(data['Make'] == "Audi")]
     print(f"Audi mjerenja: {len(audis)}")
@@ -61,7 +60,7 @@ def e_zadatak():
     '''
     even_cylinders = data[(data['Cylinders'] % 2 == 0)]
     print(f"Broj auto sa parnim brojem cilindara: {len(even_cylinders)}")
-    even_cylinders = even_cylinders.groupby('Cylinders')
+    even_cylinders = even_cylinders.groupby('Cylinders') # moram grupirati kako bi mogla odrediti mean (srednju vrijednost)
     print(even_cylinders['CO2 Emissions (g/km)'].mean())
 
 
@@ -71,9 +70,11 @@ def f_zadatak():
     koriste dizel, a kolika za vozila 
     koja koriste regularni benzin? Koliko iznose medijalne vrijednosti?
     '''
-    fuel_data = data.groupby('Fuel Type')
-    print(fuel_data['Fuel Consumption City (L/100km)'].mean())
-    print(fuel_data['Fuel Consumption City (L/100km)'].median())
+    diesels = data[(data['Fuel Type'] == 'D')]
+    petrols = data[(data['Fuel Type'] == 'Z')]
+
+    print(f"Dizeli:\nProsjecno: {diesels['Fuel Consumption City (L/100km)'].mean()} - Medijalno: {diesels['Fuel Consumption City (L/100km)'].median()}")
+    print(f"Benzinci:\nProsjecno: {petrols['Fuel Consumption City (L/100km)'].mean()} - Medijalno: {petrols['Fuel Consumption City (L/100km)'].median()}")
 
 def g_zadatak():
     '''
@@ -85,7 +86,7 @@ def g_zadatak():
 
 def h_zadatak():
     '''
-    h) Koliko ima vozila ima rucni tip mjenjača (bez obzira na broj brzina)?
+    Koliko ima vozila ima rucni tip mjenjača (bez obzira na broj brzina)?
     '''
     manual_transsmission = data[(data['Transmission'].str.startswith('M'))]
     print(len(manual_transsmission['Transmission']))
@@ -96,5 +97,11 @@ def i_zadatak():
     Komentirajte dobiveni rezultat
     '''
     print (data.corr( numeric_only = True ))
-
-i_zadatak()
+'''
+Komentiranje zadnjeg zadatka:
+Velicine imaju dosta veliki korelaciju. Npr. broj obujam motora i broj cilindara su oko 0.9, dok je potrosnja oko 0.8 sto ukazuje na veliku korelaciju.
+Takodjer razlog zasto potrosnja u mpg ima veliku negativnu korelaciju je to sto je ta velicina obrnuta, odnosno, sto automobil vise trosi, broj je manji
+Npr: automobil koji trosi 25 MPG trosi vise nego automobil koji trosi 45 MPG. Dakle, ta velicina je obrnuta L/100km te takodjer, zbog toga dobivamo negativnu
+korelaciju. Sto je negativna korelacija blize -1 to je ona vise obrnuto proporcijalna, dok sto je blize 1, to je vise proporcijonalna. Vrijednosti oko 0
+nemaju nikakvu korelaciju s velicinom.
+'''
