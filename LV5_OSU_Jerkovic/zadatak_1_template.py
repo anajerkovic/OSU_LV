@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix , ConfusionMatrixDisplay, accuracy_score, classification_report
+from sklearn.metrics import confusion_matrix , ConfusionMatrixDisplay, accuracy_score, classification_report, precision_score, recall_score
 
 
 X, y = make_classification(n_samples=200, n_features=2, n_redundant=0, n_informative=2,
@@ -14,13 +14,15 @@ X, y = make_classification(n_samples=200, n_features=2, n_redundant=0, n_informa
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=5)
 
 '''
-a) Prikažite podatke za ucenje u x1 −x2 ravnini matplotlib biblioteke pri cemu podatke obojite
+a) Prikažite podatke za ucenje u x1 x2 ravnini matplotlib biblioteke pri cemu podatke obojite
 s obzirom na klasu. Prikažite i podatke iz skupa za testiranje, ali za njih koristite drugi
-marker (npr. ’x’). Koristite funkciju scatter koja osim podataka prima i parametre c i
-cmap kojima je moguce de ´ finirati boju svake klase.
+marker (npr. x). Koristite funkciju scatter koja osim podataka prima i parametre c i
+cmap kojima je moguce definirati boju svake klase.
 '''
-plt.scatter(X_train[:,0], X_train[:,1], c="magenta", label="Train data", alpha=0.5)
-plt.scatter(X_test[:,0], X_test[:,1], c="green", marker="*", label="Test data", alpha=0.5)
+plt.scatter(X_train[:,0], X_train[:,1], cmap="coolwarm", label="Train data", alpha=0.7, c=y_train)
+plt.scatter(X_test[:,0], X_test[:,1], cmap="coolwarm", marker="*", label="Test data", alpha=0.7, c=y_test)
+plt.xlabel("x1")
+plt.ylabel("x2")
 plt.legend()
 plt.show()
 
@@ -35,22 +37,22 @@ y_test_p = LogRegression_model.predict( X_test )
 
 
 '''
-c) Pronadite u atributima izgrađenog modela parametre modela. Prikažite granicu odluke ¯
-naucenog modela u ravnini ˇ x1 − x2 zajedno s podacima za ucenje. Napomena: granica ˇ
-odluke u ravnini x1 −x2 definirana je kao krivulja: θ0 +θ1x1 +θ2x2 = 0.
+c) Pronadite u atributima izgrađenog modela parametre modela. Prikažite granicu odluke 
+naucenog modela u ravnini  x1  x2 zajedno s podacima za ucenje. Napomena: granica 
+odluke u ravnini x1 x2 definirana je kao krivulja: θ0 +θ1x1 +θ2x2 = 0.
 '''
-b = LogRegression_model.intercept_[0] # θ0
-w1,w2 = LogRegression_model.coef_.T  # θ1 θ2
+coef = LogRegression_model.coef_[0]
+intercept = LogRegression_model.intercept_
 
-c = -b/w2
-m = -w1/w2 # nagib
 
-xd = np.array([-4, 4])
-yd = m*xd+c
+def decision_boundary(x1):
+    return (-coef[0]*x1 - intercept) / coef[1]
 
-plt.plot(xd,yd, 'k', lw=1, ls='--')
-plt.fill_between(xd, yd, -4,color='magenta', alpha=0.3)
-plt.fill_between(xd, yd, 4, color='green', alpha=0.3)
+plt.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap='coolwarm')
+plt.plot(X_train[:, 0], decision_boundary(X_train[:, 0]))
+plt.xlabel('x1')
+plt.ylabel('x2')
+plt.title('Logistic Regression Decision Boundary')
 plt.show()
 
 
@@ -60,13 +62,27 @@ regresije. Izracunajte i prikažite matricu zabune na testnim podacima. Izračun
 preciznost i odziv na skupu podataka za testiranje.
 '''
 disp = ConfusionMatrixDisplay( confusion_matrix ( y_test , y_test_p ) )
-disp.plot ()
-plt.show ()
+disp.plot()
+plt.show()
+
 print (" Tocnost : " ,accuracy_score( y_test , y_test_p ))
+print (" Preciznost : " ,precision_score( y_test , y_test_p ))
+print (" Odziv : " ,recall_score( y_test , y_test_p ))
 print(classification_report( y_test , y_test_p ) )
 
 
 '''
-e) Prikažite skup za testiranje u ravnini x1 −x2. Zelenom bojom oznacite dobro klasificirane
+e) Prikažite skup za testiranje u ravnini x1 x2. Zelenom bojom oznacite dobro klasificirane
 primjere dok pogrešno klasificirane primjere oznacite crnom bojom.
 '''
+plt.scatter(X_test[:, 0], X_test[:, 1], label="test", cmap="seismic", c=y_test)
+for i in range(len(y_test)):
+    if y_test[i] == y_test_p[i]:
+        plt.scatter(X_test[i, 0], X_test[i, 1], c='g')
+    else:
+        plt.scatter(X_test[i, 0], X_test[i, 1], c='r')
+
+plt.xlabel("x1")
+plt.ylabel("x2")
+plt.show()
+
