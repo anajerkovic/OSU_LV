@@ -3,62 +3,63 @@ import matplotlib.pyplot as plt
 import matplotlib.image as Image
 from sklearn.cluster import KMeans
 
-images = ["test_1", "test_2", "test_3", "test_4", "test_5", "test_6"]
+for n in range(1, 7):
+    img = Image.imread("imgs\\test_"+ str(n) +".jpg")
 
-
-
-for image in images:
-    img = Image.imread(f"imgs\\{image}.jpg")
-
-    # prikazi originalnu sliku
     plt.figure()
-    plt.title("Originalna slika")
+    plt.title("Originalna slika" + str(n))
     plt.imshow(img)
     plt.tight_layout()
-    plt.show()
 
-    # pretvori vrijednosti elemenata slike u raspon 0 do 1
     img = img.astype(np.float64) / 255
-
-    # transfromiraj sliku u 2D numpy polje (jedan red su RGB komponente elementa slike)
     w,h,d = img.shape
     img_array = np.reshape(img, (w*h, d))
+    unique = np.unique(img_array, axis = 0)
+    print("Broj boja u slici", str(n), ":", len(unique))
 
-    # rezultatna slika
-    img_array_aprox = img_array.copy()
+    km = KMeans(n_clusters = 5, init = 'k-means++')
+    km.fit(img_array)
+    img_array_p = km.predict(img_array)
 
+    for i in range(len(img_array_p)):
+        img_array[i] = km.cluster_centers_[img_array_p[i]]*255
 
-    km = KMeans(n_clusters=2, init="k-means++",n_init=5,random_state=0)
-    km.fit(img_array_aprox)
+    if n == 4: #zbog glupog New Yorka
+        img_array = np.reshape(img_array, (w, h, d))
+    else:
+        img_array = np.reshape(img_array.astype(np.uint8), (w, h, d))
 
-
-    labels = km.predict(img_array_aprox)
-
-    centers = km.cluster_centers_
-
-    img_array_aprox[:,0] = centers[labels][:,0]
-    img_array_aprox[:,1] = centers[labels][:,1]
-    img_array_aprox[:,2] = centers[labels][:,2]
-
-    img_array_aprox = np.reshape(img_array_aprox, (w,h,d))
-
-    f,ax = plt.subplots(1,2)
-    plt.title(f"Rezultat slike {image}")
-    ax[0].imshow(img)
-    ax[1].imshow(img_array_aprox)
-
+    plt.figure()
+    plt.title("Obradjena slika" + str(n))
+    plt.imshow(img_array)
     plt.tight_layout()
+
+    img = Image.imread("imgs\\test_"+ str(n) +".jpg")
+    img = img.astype(np.float64) / 255
+    w,h,d = img.shape
+    img_array = np.reshape(img, (w*h, d))
+    groups = np.arange(2, 11, 1)
+    inertias = np.empty(len(groups))
+
+    for nc in range(2, 11):
+        km = KMeans(n_clusters = nc, init = 'k-means++')
+        km.fit(img_array)
+        inertias[nc-2] = km.inertia_
+
+    plt.figure()
+    plt.plot(groups, inertias)
+    plt.title("J-K ovisnost")
+
+    km = KMeans(n_clusters = 6, init = 'k-means++')
+    km.fit(img_array)
+    img_array_p = km.predict(img_array)
+
+    for i in range(1, 7):
+        img_array_k = np.full((w*h, d), 255)
+        for j in range(len(img_array_p)):
+            if img_array_p[j] == i-1:
+                img_array_k[j] = km.cluster_centers_[i-1]*255
+        img_array_k = np.reshape(img_array_k.astype(np.uint8), (w, h, d))
+        plt.figure()
+        plt.imshow(img_array_k)
     plt.show()
-
-inertias = []
-
-for i in range(1,10):
-    kmeans = KMeans(n_clusters=i)
-    kmeans.fit(img_array)
-    inertias.append(kmeans.inertia_)
-
-plt.plot(range(1,10), inertias, marker='o')
-plt.title('Elbow method')
-plt.xlabel('Number of clusters')
-plt.ylabel('Inertia')
-plt.show()
